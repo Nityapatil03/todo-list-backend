@@ -23,12 +23,12 @@ router.post('/register', async (req, res) => {
             password
         });
         if (user) {
-            genratetoken(res, user._id.toString());
+            const token = genratetoken(res, user._id.toString());
             res.status(201).json({
                 _id: user._id.toString(),
                 name: user.name,
                 email: user.email,
-     
+                token
             });
         }
         else {
@@ -62,11 +62,12 @@ router.post('/login', async (req, res) => {
     }
 
     // Success
-    genratetoken(res, user._id.toString());
+    const token = genratetoken(res, user._id.toString());
     res.status(200).json({
         _id: user._id.toString(),
         name: user.name,
         email: user.email,
+        token
     });
 });
 
