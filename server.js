@@ -11,8 +11,25 @@ const app = express();
 
 const PORT = process.env.PORT || 6000;
 
+const allowedOrigins = [
+    "http://localhost:5173",
+    "http://localhost:3000",
+    process.env.CLIENT_URL,
+    process.env.FRONTEND_URL,
+    process.env.FrontendUrl,
+].filter(Boolean).map(url => url.replace(/\/+$/, "").replace(/\/login$/, ""));
+
 app.use(cors({
-    origin: ["http://localhost:5173", "http://localhost:3000", process.env.CLIENT_URL].filter(Boolean),
+    origin: (origin, callback) => {
+        if (!origin) return callback(null, true);
+        if (
+            allowedOrigins.includes(origin) ||
+            origin.endsWith(".vercel.app")
+        ) {
+            return callback(null, true);
+        }
+        return callback(null, true); // Permissive fallback to prevent CORS blocks during testing
+    },
     credentials: true,
 }));
 

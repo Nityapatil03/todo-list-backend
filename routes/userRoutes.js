@@ -124,7 +124,7 @@ router.post('/logout', async (req, res) => {
     res.clearCookie('jwt', {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict'
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
     });
     res.status(200).json({ message: "Logged out successfully" });
 })
