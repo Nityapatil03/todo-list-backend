@@ -24,8 +24,11 @@ connectDB();
 app.use("/api/users",userRoutes);
 app.use("/api/tasks",tasksRoutes);
 
-const server = app.listen(PORT,()=>{
-    console.log(`server is running on port ${PORT}`);
+const PORT = process.env.PORT || 10000;
+
+const server = app.listen(PORT, "0.0.0.0", () => {
+  console.log(`Server running on port ${PORT}`);
+});
 });
 
 export default server;
