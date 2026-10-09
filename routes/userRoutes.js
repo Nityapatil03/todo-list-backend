@@ -35,40 +35,45 @@ router.post('/register', async (req, res) => {
             res.status(400).json({ message: "Invalid user data" })
         }
     } catch (error) {
-        console.log(error);
-        res.status(500).json({ message: "Internal server error" })
+        console.error("Register error:", error);
+        res.status(500).json({ message: error.message || "Internal server error" });
     }
 });
 
 
 
 router.post('/login', async (req, res) => {
-    const { email, password } = req.body;
-    if (!email || !password) {
-        return res.status(400).json({ message: "Please fill all the fields" });
+    try {
+        const { email, password } = req.body;
+        if (!email || !password) {
+            return res.status(400).json({ message: "Please fill all the fields" });
+        }
+
+        const user = await UserModel.findOne({ email: email.toLowerCase().trim() });
+
+        if (!user) {
+            console.log(`❌ Login failed: No user found with email "${email}"`);
+            return res.status(401).json({ message: "Invalid email or password" });
+        }
+
+        const isMatch = await user.matchPassword(password);
+        if (!isMatch) {
+            console.log(`❌ Login failed: Password incorrect for "${email}"`);
+            return res.status(401).json({ message: "Invalid email or password" });
+        }
+
+        // Success
+        const token = genratetoken(res, user._id.toString());
+        res.status(200).json({
+            _id: user._id.toString(),
+            name: user.name,
+            email: user.email,
+            token
+        });
+    } catch (error) {
+        console.error("Login error:", error);
+        res.status(500).json({ message: error.message || "Internal server error" });
     }
-
-    const user = await UserModel.findOne({ email: email.toLowerCase().trim() });
-
-    if (!user) {
-        console.log(`❌ Login failed: No user found with email "${email}"`);
-        return res.status(401).json({ message: "Invalid email or password" });
-    }
-
-    const isMatch = await user.matchPassword(password);
-    if (!isMatch) {
-        console.log(`❌ Login failed: Password incorrect for "${email}"`);
-        return res.status(401).json({ message: "Invalid email or password" });
-    }
-
-    // Success
-    const token = genratetoken(res, user._id.toString());
-    res.status(200).json({
-        _id: user._id.toString(),
-        name: user.name,
-        email: user.email,
-        token
-    });
 });
 
 

@@ -2,7 +2,8 @@ import jwt from 'jsonwebtoken';
 import User from '../models/usermodel.js';
 
 const genratetoken = (res, userId) => {
-    const token = jwt.sign({ id: userId }, process.env.JWT_SECRET, {
+    const secret = process.env.JWT_SECRET || "nitya_jwt_secret_key_2026_fallback";
+    const token = jwt.sign({ id: userId }, secret, {
         expiresIn: "30d" 
     });
 

@@ -4,8 +4,10 @@ let dbConnectionError = null;
 
 const connectDB = async () => {
     try {
-        const uri = process.env.MONGODB_URI || process.env.MONGO_URI || process.env.MONGO_URI_LOCAL || "mongodb://127.0.0.1:27017/ToDo";
-        console.log("Connecting to MongoDB...");
+        const ATLAS_URI = "mongodb+srv://nityaspatil06_db_users:Nitya1234@todo.fp8yt3t.mongodb.net/ToDo?appName=ToDo";
+        const isCloud = process.env.RENDER || process.env.NODE_ENV === "production";
+        const uri = process.env.MONGODB_URI || process.env.MONGO_URI || (isCloud ? ATLAS_URI : "mongodb://127.0.0.1:27017/ToDo");
+        console.log(`Connecting to MongoDB (${isCloud ? "Cloud Atlas" : "Local/Env"})...`);
         await mongoose.connect(uri);
         dbConnectionError = null;
         console.log("MongoDB connected successfully");
