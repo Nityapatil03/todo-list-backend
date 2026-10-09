@@ -9,23 +9,30 @@ import tasksRoutes from "./routes/taskRoutes.js";
 dotenv.config();
 const app = express();
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 6000;
 
 app.use(cors({
-    origin: ["http://localhost:5173", "http://localhost:3000"],
+    origin: ["http://localhost:5173", "http://localhost:3000", process.env.CLIENT_URL].filter(Boolean),
     credentials: true,
 }));
 
 app.use(express.json());
-app.use(express.urlencoded({extended:true}));
+app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 connectDB();
 
-app.use("/api/users",userRoutes);
-app.use("/api/tasks",tasksRoutes);
+app.get("/", (req, res) => {
+    res.status(200).json({
+        success: true,
+        message: "ToDo backend is running successfully!"
+    });
+});
 
-const server = app.listen(PORT,()=>{
+app.use("/api/users", userRoutes);
+app.use("/api/tasks", tasksRoutes);
+
+const server = app.listen(PORT, "0.0.0.0", () => {
     console.log(`server is running on port ${PORT}`);
 });
 
