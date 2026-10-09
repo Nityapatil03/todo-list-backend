@@ -11,14 +11,15 @@ router.post('/register', async (req, res) => {
         if (!name || !email || !password) {
             return res.status(400).json({ message: "Please fill all the fields" });
         }
-        const userExists = await UserModel.findOne({ email });
+        const normalizedEmail = email.toLowerCase().trim();
+        const userExists = await UserModel.findOne({ email: normalizedEmail });
         if (userExists) {
             return res.status(400).json({ message: "User already exists" });
         }
 
         const user = await UserModel.create({
-            name,
-            email,
+            name: name.trim(),
+            email: normalizedEmail,
             password
         });
         if (user) {
@@ -44,21 +45,31 @@ router.post('/register', async (req, res) => {
 router.post('/login', async (req, res) => {
     const { email, password } = req.body;
     if (!email || !password) {
-        return res.status(400).json({ message: "Please fill all the fields" })
+        return res.status(400).json({ message: "Please fill all the fields" });
     }
-    const user = await UserModel.findOne({ email });
-    if (user && (await user.matchPassword(password))) {
-        genratetoken(res, user._id.toString());
-        res.status(200).json({
-            _id: user._id.toString(),
-            name: user.name,
-            email: user.email,
-        });
+
+    const user = await UserModel.findOne({ email: email.toLowerCase().trim() });
+
+    if (!user) {
+        console.log(`❌ Login failed: No user found with email "${email}"`);
+        return res.status(401).json({ message: "Invalid email or password" });
     }
-    else {
-        res.status(401).json({ message: "Invalid email or password" });
+
+    const isMatch = await user.matchPassword(password);
+    if (!isMatch) {
+        console.log(`❌ Login failed: Password incorrect for "${email}"`);
+        return res.status(401).json({ message: "Invalid email or password" });
     }
-})
+
+    // Success
+    genratetoken(res, user._id.toString());
+    res.status(200).json({
+        _id: user._id.toString(),
+        name: user.name,
+        email: user.email,
+    });
+});
+
 
 router.get('/profile', protect, async (req, res) => {
     const user = await UserModel.findById(req.user._id).select("-password");
@@ -74,8 +85,10 @@ router.get('/profile', protect, async (req, res) => {
     }
 })
 
-router.put('/profile', protect, async (req, res) => {
-    const { name, currentpassword, newpassword } = req.body;
+router.put(['/profile', '/updateProfile'], protect, async (req, res) => {
+    const { name } = req.body;
+    const currentpassword = req.body.currentpassword || req.body.currentPassword;
+    const newpassword = req.body.newpassword || req.body.newPassword;
     const user = await UserModel.findById(req.user._id);
 
     if (user) {
