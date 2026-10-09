@@ -8,6 +8,7 @@ import tasksRoutes from "./routes/taskRoutes.js";
 
 dotenv.config();
 const app = express();
+
 const PORT = process.env.PORT || 5000;
 
 app.use(cors({
@@ -24,11 +25,8 @@ connectDB();
 app.use("/api/users",userRoutes);
 app.use("/api/tasks",tasksRoutes);
 
-const PORT = process.env.PORT || 10000;
-
-const server = app.listen(PORT, "0.0.0.0", () => {
-  console.log(`Server running on port ${PORT}`);
-});
+const server = app.listen(PORT,()=>{
+    console.log(`server is running on port ${PORT}`);
 });
 
 export default server;
